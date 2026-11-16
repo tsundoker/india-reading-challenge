@@ -16,8 +16,6 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,'Times N
 main{max-width:900px;margin:0 auto;padding:18px 14px 40px}
 h1{font-size:1.6rem;margin:0 0 4px}
 .sub{color:var(--mute);font-family:system-ui,sans-serif;font-size:.9rem;margin:0 0 12px}
-.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-bottom:6px}
-.bar i{display:block;height:100%;width:0;background:var(--read);transition:width .3s}
 .count{font-family:system-ui,sans-serif;font-size:.9rem;margin-bottom:12px}
 .wrap{display:grid;grid-template-columns:1fr;gap:14px}
 @media(min-width:760px){.wrap{grid-template-columns:1.25fr 1fr;align-items:start}}
@@ -59,7 +57,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <div class="auth" id="authbox"><strong>Connect to the community</strong><p class="small" id="authstatus">Create an account or sign in to add your books. Everyone can browse the community's books.</p>
 <div id="authforms"><div class="authgrid"><div><label for="email">Email</label><input id="email" type="email" autocomplete="email"></div><div><label for="password">Password</label><input id="password" type="password" autocomplete="current-password"></div><div><label for="displayname">Display name (for new accounts)</label><input id="displayname" autocomplete="nickname" placeholder="Your name"></div><div class="row wide"><button class="b p" id="signup">Create account</button><button class="b" id="login">Sign in</button></div></div></div>
 <div id="signedin" hidden><div class="row"><button class="b" id="logout">Sign out</button></div></div><p class="small" id="message" aria-live="polite"></p></div>
-<div class="bar"><i id="bar"></i></div><div class="count" id="count"></div>
+<div class="count" id="count"></div>
 <div class="wrap"><svg id="map" viewBox="0 0 1629 1819" role="img" aria-label="Map of India"></svg><div class="panel" id="panel"><p class="hint">Select a state or union territory to see its books or add one.</p></div></div>
 <h3>Books in the community</h3><ul id="list"></ul>
 <h3>Leaderboard</h3><p class="note">Everyone can see everyone’s books, reading totals and state coverage. Email addresses are never shown.</p><div id="board"><p class="note">Connect to the database to load the community leaderboard.</p></div>
@@ -89,7 +87,6 @@ function render(){
     var title=el.querySelector('title');if(title)title.textContent=tip;
     el.setAttribute('aria-label',tip);
   });
-  $('bar').style.width=(states.size/NAMES.length*100)+'%';
   $('count').textContent=ME?(states.size+' of '+NAMES.length+' places covered by your books · '+visibleBooks.length+' of your books'):(states.size+' of '+NAMES.length+' places covered by the community · '+BOOKS.length+' community books');
   renderList();panel();renderBoard()
 }
