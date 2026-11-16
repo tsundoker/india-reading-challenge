@@ -76,7 +76,23 @@ function msg(s){$('message').textContent=s||''}
 function esc(s){return String(s||'')}
 function build(){var svg=$('map');NAMES.forEach(n=>{var s=MAP.s[n],p=document.createElementNS(NS,'path');p.setAttribute('d',s.d);p.setAttribute('class','st');p.setAttribute('fill-rule','evenodd');p.dataset.n=n;var t=document.createElementNS(NS,'title');t.textContent=pretty(n);p.appendChild(t);p.onclick=()=>pick(n);svg.appendChild(p)});NAMES.forEach(n=>{var s=MAP.s[n];if(s.a>=.35)return;var c=document.createElementNS(NS,'circle');c.setAttribute('cx',s.c[0]);c.setAttribute('cy',s.c[1]);c.setAttribute('r',11);c.setAttribute('class','mk');c.dataset.n=n;var t=document.createElementNS(NS,'title');t.textContent=pretty(n);c.appendChild(t);c.onclick=()=>pick(n);svg.appendChild(c)})}
 function myBooks(state){return BOOKS.filter(b=>b.state===state)}
-function render(){var states=new Set(BOOKS.map(b=>b.state));document.querySelectorAll('#map [data-n]').forEach(el=>{var k=el.dataset.n,base=el.tagName==='circle'?'mk':'st';el.setAttribute('class',base+(states.has(k)?' read':'')+(sel===k?' sel':''))});$('bar').style.width=(states.size/NAMES.length*100)+'%';$('count').textContent=states.size+' of '+NAMES.length+' states and territories covered · '+BOOKS.length+' books added';renderList();panel();renderBoard()}
+function render(){
+  var visibleBooks=ME?BOOKS.filter(b=>b.user_id===ME):BOOKS;
+  var states=new Set(visibleBooks.map(b=>b.state));
+  var communityCounts={};var myCounts={};
+  BOOKS.forEach(b=>{communityCounts[b.state]=(communityCounts[b.state]||0)+1;if(ME===b.user_id)myCounts[b.state]=(myCounts[b.state]||0)+1});
+  document.querySelectorAll('#map [data-n]').forEach(el=>{
+    var k=el.dataset.n,base=el.tagName==='circle'?'mk':'st';
+    el.setAttribute('class',base+(ME&&states.has(k)?' read':'')+(sel===k?' sel':''));
+    var own=myCounts[k]||0,total=communityCounts[k]||0;
+    var tip=ME?(pretty(k)+': '+own+' of your books · '+total+' community '+(total===1?'book':'books')):(pretty(k)+': '+total+' '+(total===1?'book':'books')+' added by the community');
+    var title=el.querySelector('title');if(title)title.textContent=tip;
+    el.setAttribute('aria-label',tip);
+  });
+  $('bar').style.width=(states.size/NAMES.length*100)+'%';
+  $('count').textContent=ME?(states.size+' of '+NAMES.length+' places covered by your books · '+visibleBooks.length+' of your books'):(states.size+' of '+NAMES.length+' places covered by the community · '+BOOKS.length+' community books');
+  renderList();panel();renderBoard()
+}
 function node(tag,txt,cls){var e=document.createElement(tag);if(txt!==undefined)e.textContent=txt;if(cls)e.className=cls;return e}
 function button(txt,cls,fn){var b=node('button',txt,'b '+(cls||''));b.type='button';b.onclick=fn;return b}
 function renderList(){var ul=$('list');ul.innerHTML='';if(!BOOKS.length){ul.appendChild(node('li','No books have been added yet. Pick a state to begin.'));return}BOOKS.slice().sort((a,b)=>a.state.localeCompare(b.state)||a.title.localeCompare(b.title)).forEach(b=>{var li=node('li');var strong=node('b',b.title);li.appendChild(strong);li.appendChild(node('span',(b.author?' by '+b.author:'')+' · '+pretty(b.state)+' · '+(PROFILES[b.user_id]||'Reader')));ul.appendChild(li)})}
