@@ -51,6 +51,7 @@ li span{color:var(--mute)}
 .auth{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0;font-family:system-ui,sans-serif}
 .authgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.authgrid .wide{grid-column:1/-1}
 .small{font-size:.82rem;color:var(--mute)}
+.boards-grid{display:grid;grid-template-columns:1fr;gap:16px;align-items:start;margin-top:8px}.board-section{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}.board-section h3{margin:0 0 6px}@media(min-width:760px){.boards-grid{grid-template-columns:1fr 1fr}}
 .bookrow{padding:9px 0;border-bottom:1px solid var(--line)}
 .bookrow:last-child{border:0}.actions{display:flex;gap:6px;margin-top:6px}
 button:disabled{opacity:.5;cursor:not-allowed}
@@ -65,8 +66,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <div class="count" id="count"></div>
 <div class="wrap"><div class="map-wrap" id="mapwrap"><svg id="map" viewBox="0 0 1629 1819" role="img" aria-label="Map of India"></svg><div id="maptooltip" class="map-tooltip" role="tooltip" hidden></div></div><div class="panel" id="panel"><p class="hint">Select a state or union territory to see its books or add one.</p></div></div>
 <h3>Your books</h3><ul id="list"></ul>
-<h3>Books in Challenge</h3><p class="note">All books added by community readers, including books not yet marked as read. Email addresses are never shown.</p><div id="board"><p class="note">Loading community books…</p></div>
-<h3>Leaderboard</h3><p class="note">Ranked by completed books only. Only books marked as read count toward totals and are shown here.</p><div id="completedboard"><p class="note">Loading completed-books leaderboard…</p></div>
+<div class="boards-grid"><section class="board-section"><h3>Books in Challenge</h3><p class="note">All books added by community readers, including books not yet marked as read. Email addresses are never shown.</p><div id="board"><p class="note">Loading community books…</p></div></section><section class="board-section"><h3>Leaderboard</h3><p class="note">Ranked by completed books only. Only books marked as read count toward totals and are shown here.</p><div id="completedboard"><p class="note">Loading completed-books leaderboard…</p></div></section></div>
 <p class="note" id="note">Small states and territories are shown as circles on the map. Map boundaries are simplified.</p>
 </main>
 <script src="./config.js"></script>
