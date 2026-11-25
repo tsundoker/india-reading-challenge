@@ -19,7 +19,10 @@ h1{font-size:1.6rem;margin:0 0 4px}
 .count{font-family:system-ui,sans-serif;font-size:.9rem;margin-bottom:12px}
 .wrap{display:grid;grid-template-columns:1fr;gap:14px}
 @media(min-width:760px){.wrap{grid-template-columns:1.25fr 1fr;align-items:start}}
+.map-wrap{position:relative;min-width:0}
 svg{width:100%;height:auto;max-height:80vh;display:block}
+.map-tooltip{position:absolute;z-index:20;max-width:min(260px,80vw);padding:7px 10px;border-radius:7px;background:#27231f;color:#fff;font:12px/1.35 system-ui,sans-serif;box-shadow:0 3px 12px #0003;pointer-events:none;white-space:normal}
+.map-tooltip[hidden]{display:none}
 .st{fill:var(--empty);stroke:var(--bg);stroke-width:1.5;stroke-linejoin:round;cursor:pointer;transition:fill .15s}
 .st.read{fill:var(--read)}
 .st.unread{fill:var(--unread)}
@@ -60,7 +63,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <div id="authforms"><div class="authgrid"><div><label for="email">Email</label><input id="email" type="email" autocomplete="email"></div><div><label for="password">Password</label><input id="password" type="password" autocomplete="current-password"></div><div><label for="displayname">Display name (for new accounts)</label><input id="displayname" autocomplete="nickname" placeholder="Your name"></div><div class="row wide"><button class="b p" id="signup">Create account</button><button class="b" id="login">Sign in</button></div></div></div>
 <div id="signedin" hidden><div class="row"><button class="b" id="logout">Sign out</button></div></div><p class="small" id="message" aria-live="polite"></p></div>
 <div class="count" id="count"></div>
-<div class="wrap"><svg id="map" viewBox="0 0 1629 1819" role="img" aria-label="Map of India"></svg><div class="panel" id="panel"><p class="hint">Select a state or union territory to see its books or add one.</p></div></div>
+<div class="wrap"><div class="map-wrap" id="mapwrap"><svg id="map" viewBox="0 0 1629 1819" role="img" aria-label="Map of India"></svg><div id="maptooltip" class="map-tooltip" role="tooltip" hidden></div></div><div class="panel" id="panel"><p class="hint">Select a state or union territory to see its books or add one.</p></div></div>
 <h3>Your books</h3><ul id="list"></ul>
 <h3>Leaderboard</h3><p class="note">Community readers, their books and reading totals. Email addresses are never shown.</p><div id="board"><p class="note">Loading community leaderboard…</p></div>
 <p class="note" id="note">Small states and territories are shown as circles on the map. Map boundaries are simplified.</p>
@@ -74,7 +77,24 @@ var $=id=>document.getElementById(id);
 function pretty(n){return n.replace(/ and /g," & ")}
 function msg(s){$('message').textContent=s||''}
 function esc(s){return String(s||'')}
-function build(){var svg=$('map');NAMES.forEach(n=>{var s=MAP.s[n],p=document.createElementNS(NS,'path');p.setAttribute('d',s.d);p.setAttribute('class','st');p.setAttribute('fill-rule','evenodd');p.dataset.n=n;var t=document.createElementNS(NS,'title');t.textContent=pretty(n);p.appendChild(t);p.onclick=()=>pick(n);svg.appendChild(p)});NAMES.forEach(n=>{var s=MAP.s[n];if(s.a>=.35)return;var c=document.createElementNS(NS,'circle');c.setAttribute('cx',s.c[0]);c.setAttribute('cy',s.c[1]);c.setAttribute('r',11);c.setAttribute('class','mk');c.dataset.n=n;var t=document.createElementNS(NS,'title');t.textContent=pretty(n);c.appendChild(t);c.onclick=()=>pick(n);svg.appendChild(c)})}
+function attachMapHover(el){
+  el.addEventListener('pointerenter',e=>{if(e.pointerType==='touch')return;showMapTooltip(el,e)});
+  el.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;showMapTooltip(el,e)});
+  el.addEventListener('pointerleave',()=>{var tip=$('maptooltip');if(tip)tip.hidden=true});
+  el.addEventListener('focus',()=>{var r=el.getBoundingClientRect();showMapTooltip(el,{clientX:r.left+r.width/2,clientY:r.top+r.height/2})});
+  el.addEventListener('blur',()=>{var tip=$('maptooltip');if(tip)tip.hidden=true});
+}
+function showMapTooltip(el,e){
+  var tip=$('maptooltip'),wrap=$('mapwrap');if(!tip||!wrap)return;
+  var k=el.dataset.n,own=ME?BOOKS.filter(b=>b.user_id===ME&&b.state===k):BOOKS.filter(b=>b.state===k);
+  var read=own.filter(b=>b.is_read).length,total=own.length;
+  tip.textContent=ME?(pretty(k)+': '+total+' '+(total===1?'book':'books')+' added · '+read+' marked read'):(pretty(k)+': '+total+' '+(total===1?'book':'books')+' added by the community');
+  var wr=wrap.getBoundingClientRect(),x=e.clientX-wr.left+12,y=e.clientY-wr.top+12;
+  tip.hidden=false;
+  var maxX=Math.max(8,wr.width-tip.offsetWidth-8),maxY=Math.max(8,wr.height-tip.offsetHeight-8);
+  tip.style.left=Math.max(8,Math.min(x,maxX))+'px';tip.style.top=Math.max(8,Math.min(y,maxY))+'px';
+}
+function build(){var svg=$('map');NAMES.forEach(n=>{var s=MAP.s[n],p=document.createElementNS(NS,'path');p.setAttribute('d',s.d);p.setAttribute('class','st');p.setAttribute('fill-rule','evenodd');p.dataset.n=n;var t=document.createElementNS(NS,'title');t.textContent=pretty(n);p.appendChild(t);p.onclick=()=>pick(n);attachMapHover(p);svg.appendChild(p)});NAMES.forEach(n=>{var s=MAP.s[n];if(s.a>=.35)return;var c=document.createElementNS(NS,'circle');c.setAttribute('cx',s.c[0]);c.setAttribute('cy',s.c[1]);c.setAttribute('r',11);c.setAttribute('class','mk');c.dataset.n=n;var t=document.createElementNS(NS,'title');t.textContent=pretty(n);c.appendChild(t);c.onclick=()=>pick(n);attachMapHover(c);svg.appendChild(c)})}
 function myBooks(state){return BOOKS.filter(b=>b.state===state&&(!ME||b.user_id===ME))}
 function dateLabel(value){return value?new Date(value).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):''}
 function render(){
